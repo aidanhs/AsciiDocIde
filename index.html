@@ -167,7 +167,8 @@ window.editor = editor;
 
 function abort() {
   dojson = function () {}
-  alert('A request failed, save your work now and reload the page');
+  alert('A request failed! All operation will now be deliberately crippled, ' +
+    'save your work now and reload the page');
   throw Error('requestfailed');
 }
 
