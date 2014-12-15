@@ -1,0 +1,7 @@
+
+[source,bash]
+----
+python srv.py # in directory to serve
+----
+
+WARNING: this is indended to be used locally and has known directory traversal attacks
