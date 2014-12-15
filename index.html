@@ -59,12 +59,23 @@
   #website-link a::before { content: '['; }
   #website-link a::after { content: ']'; }
 
-  #filelist {
+  #sidebar {
+    z-index: 10;
     position: fixed;
     left: 0;
     top: 0;
     bottom: 0;
     width: 350px;
+  }
+  #filestatus {
+    position: absolute;
+    top: 0;
+    height: 50px;
+  }
+  #filelist {
+    position: absolute;
+    top: 50px;
+    bottom: 0;
     overflow-x: hidden;
     overflow-y: scroll;
     white-space: pre;
@@ -80,7 +91,15 @@
 </head>
 
 <body>
-<div id="filelist"></div>
+<div id="sidebar">
+  <div id="filestatus">
+    <p>
+    File: <span id="filepath">(none)</span><br>
+    Status: <span id="filesaved">(none)</span>
+    </p>
+  </div>
+  <div id="filelist"></div>
+</div>
 <div id='leditor'>
   <textarea id='lcode'></textarea>
   <pre id='error'></pre>
@@ -158,10 +177,15 @@ function jsondo(method, url, data, cb) {
   r.send(JSON.stringify(data));
 }
 
+var filePathElt = document.getElementById('filepath');
+var fileSavedElt = document.getElementById('filesaved');
+
 var loadfile = function (e) {
-  var file = e.target.textContent;
-  jsondo('GET', '/file?path=' + encodeURIComponent(file), '', function (err, data) {
+  var filepath = e.target.textContent;
+  jsondo('GET', '/file?path=' + encodeURIComponent(filepath), '', function (err, data) {
     editor.setValue(data);
+    filePathElt.textContent = filepath;
+    fileSavedElt.textContent = 'Saved';
   });
 };
 
