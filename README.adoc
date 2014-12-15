@@ -1,7 +1,11 @@
 
 [source,bash]
 ----
-python srv.py # in directory to serve
+git clone --recursive https://github.com/aidanhs/AsciiDocIde.git
+cd AsciiDocIde
+wget https://raw.githubusercontent.com/bottlepy/bottle/0.12.7/bottle.py
+cd /path/to/serve
+python $OLDPWD/srv.py
 ----
 
 WARNING: this is indended to be used locally and has known directory traversal attacks
