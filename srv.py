@@ -10,7 +10,7 @@ DIR = os.path.dirname(os.path.abspath(__file__))
 def save():
     path = request.json['path']
     data = request.json['data']
-    open(path, 'w').write(data)
+    open(path, 'w').write(data.encode('utf-8'))
     return '""'
 
 @route('/filelist', method='GET')
@@ -27,7 +27,10 @@ def filelist():
 
 @route('/file', method='GET')
 def loadfile():
-    return json.dumps(open(request.GET.path).read(), encoding='utf-8')
+    return json.dumps(
+        open(os.path.join('.', request.GET.path)).read().decode('utf-8'),
+        encoding='utf-8'
+    )
 
 @route('/')
 def index():
