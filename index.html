@@ -1,0 +1,185 @@
+<!doctype html>
+<html>
+<head>
+<meta charset=utf-8>
+<title>Try Asciidoc in your browser </title>
+<script src='AsciiDocBox/cm/lib/codemirror.js'></script>
+<script src='AsciiDocBox/cm/mode/asciidoc/asciidoc.js'></script>
+<script src="AsciiDocBox/asciidoctor-all.min.js"></script>
+<script src="react-0.12.1.min.js"></script>
+<script src="JSXTransformer-0.12.1.js"></script>
+<link rel="stylesheet" href="AsciiDocBox/cm/lib/codemirror.css">
+<link rel="stylesheet" href="AsciiDocBox/asciidoc.css">
+<style>
+  html, .CodeMirror, .CodeMirror-scroll {
+    height: 100%;
+  }
+  .CodeMirror, #reditor {
+    height: calc(100% - 50px);
+    margin-top: 20px;
+    box-shadow: 0px 0px 3px #bbb inset;
+    border: 0;
+  }
+  .CodeMirror { font-family: DejaVu Sans Mono, monospace; font-size: 10px; }
+  body {
+    margin: auto;
+    height: 100%;
+    position: fixed;
+    left: 370px;
+    right: 20px;
+  }
+  #leditor { height: 100%; }
+  #reditor { overflow: auto; padding: 5px; }
+  #leditor, #reditor {
+    width: 50%;
+    float: left;
+  }
+  #error {
+    position: fixed;
+    bottom: 0;
+    background: #f88;
+    display: none;
+    z-index: 2;
+  }
+  #website-link {
+    position: fixed;
+    text-align: center;
+    width: 100%;
+    left: 0;
+    font-size: 0.7em;
+    color: #aaa;
+  }
+  #website-link a {
+    color: #aaa;
+    text-decoration: none;
+  }
+  #website-link a:hover { text-decoration: underline; }
+  #website-link a::before { content: '['; }
+  #website-link a::after { content: ']'; }
+
+  #filelist {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 350px;
+    overflow-x: hidden;
+    overflow-y: scroll;
+    white-space: pre;
+    font-size: 12px;
+    font-family: monospace;
+  }
+  #filelist ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+  }
+  #filelist li {
+  }
+</style>
+</head>
+
+<body>
+<div id="filelist"></div>
+<div id='leditor'>
+  <textarea id='lcode'></textarea>
+  <pre id='error'></pre>
+</div>
+<div id='reditor'>
+  <div id='rprod'></div>
+</div>
+<div id='website-link'>
+  <a href='http://asciidoc.org'>AsciiDoc website</a>
+  <a href='https://github.com/aidanhs/AsciiDocIde/'>Code on GitHub</a>
+</div>
+
+<script>
+(function SetEditor() {
+
+// By default, CM maps the Tab key to the insertion of an actual tab.
+function betterTab(cm) {
+  if (cm.somethingSelected()) {
+    cm.indentSelection("add");
+  } else {
+    cm.replaceSelection(cm.getOption("indentWithTabs")? "\t":
+      Array(cm.getOption("indentUnit") + 1).join(" "), "end", "+input");
+  }
+}
+var editor = CodeMirror.fromTextArea(document.getElementById("lcode"), {
+  mode: 'asciidoc',
+  indentUnit: 2,
+  lineWrapping: true,
+  electricChars: false,
+  extraKeys: { Tab: betterTab }
+});
+
+function showError(msg) {
+  window.error.textContent = msg;
+  window.error.style.display = 'block';
+}
+
+function cmChange(editor) {
+  try {
+    window.error.style.display = 'none';
+    window.rprod.innerHTML = Opal.Asciidoctor.$render(editor.getValue());
+  } catch(e) {
+    showError(e.message);
+  }
+}
+
+editor.on('change', cmChange);
+
+// Wrap text smartly.
+var charWidth = editor.defaultCharWidth(), basePadding = 4;
+editor.on("renderLine", function(cm, line, elt) {
+  var off = CodeMirror.countColumn(line.text, null, cm.getOption("tabSize")) * charWidth;
+  elt.style.textIndent = "-" + off + "px";
+  elt.style.paddingLeft = (basePadding + off) + "px";
+});
+editor.refresh();
+editor.setValue('');
+window.editor = editor;
+}());
+</script>
+<script type="text/jsx">
+/** @jsx React.DOM */
+'use strict';
+
+function jsondo(method, url, data, cb) {
+  var r = new XMLHttpRequest();
+  r.open(method, url, true);
+  r.setRequestHeader('Content-type', 'application/json');
+  r.onreadystatechange = (function () {
+    if (r.readyState != 4) return;
+    var err = r.status !== 200; // we don't have 304's in this app
+    var data = err ? null : JSON.parse(r.responseText);
+    cb(err, data);
+  });
+  r.send(JSON.stringify(data));
+}
+
+var loadfile = function (e) {
+  var file = e.target.textContent;
+  jsondo('GET', '/file?path=' + encodeURIComponent(file), '', function (err, data) {
+    editor.setValue(data);
+  });
+};
+
+var FileList = React.createClass({
+  render: function () {
+    var files = this.props.files.map(function (e, i) {
+      return <li key={i}><a onClick={loadfile}>{e}</a></li>;
+    });
+    return <div><ul>{files}</ul></div>;
+  }
+});
+
+jsondo('GET', '/filelist', '', function (err, data) {
+  React.render(
+    <FileList files={data} />,
+    document.getElementById('filelist')
+  );
+});
+</script>
+</body>
+</html>
