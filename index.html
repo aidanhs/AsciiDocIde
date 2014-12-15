@@ -165,6 +165,12 @@ window.editor = editor;
 /** @jsx React.DOM */
 'use strict';
 
+function abort() {
+  dojson = function () {}
+  alert('A request failed, save your work now and reload the page');
+  throw Error('requestfailed');
+}
+
 function dojson(method, url, data, cb) {
   var r = new XMLHttpRequest();
   r.open(method, url, true);
@@ -210,7 +216,8 @@ var curfile = {
       this.set({saved: true});
       return;
     }
-    dojson('POST', '/_ide/save', {path: curfile.path, data: newdata}, function () {
+    dojson('POST', '/_ide/save', {path: curfile.path, data: newdata}, function (err, data) {
+      if (err !== null) { abort(); }
       this.set({saved: true, data: newdata});
     }.bind(this));
   }
@@ -222,6 +229,7 @@ var loadfile = function (e) {
   }
   var filepath = e.target.textContent;
   dojson('GET', '/_ide/load?path=' + encodeURIComponent(filepath), '', function (err, data) {
+    if (err !== null) { abort(); }
     editor.setValue(data);
     curfile.set({path: filepath, saved: true, data: data});
   });
