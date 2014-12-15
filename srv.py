@@ -13,6 +13,13 @@ def save():
     open(path, 'w').write(data.encode('utf-8'))
     return '""'
 
+@route('/_ide/load', method='GET')
+def load():
+    return json.dumps(
+        open(os.path.join('.', request.GET.path)).read().decode('utf-8'),
+        encoding='utf-8'
+    )
+
 @route('/_ide/filelist', method='GET')
 def filelist():
     files = []
@@ -24,13 +31,6 @@ def filelist():
     assert all([f.startswith('./') for f in files])
     files = [f[2:] for f in files]
     return json.dumps(files)
-
-@route('/_ide/file', method='GET')
-def loadfile():
-    return json.dumps(
-        open(os.path.join('.', request.GET.path)).read().decode('utf-8'),
-        encoding='utf-8'
-    )
 
 @route('/')
 def index():

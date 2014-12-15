@@ -224,7 +224,7 @@ var loadfile = function (e) {
     curfile.save();
   }
   var filepath = e.target.textContent;
-  jsondo('GET', '/_ide/file?path=' + encodeURIComponent(filepath), '', function (err, data) {
+  jsondo('GET', '/_ide/load?path=' + encodeURIComponent(filepath), '', function (err, data) {
     editor.setValue(data);
     curfile.set({path: filepath, saved: true, data: data});
   });
