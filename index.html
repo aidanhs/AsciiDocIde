@@ -2,14 +2,14 @@
 <html>
 <head>
 <meta charset=utf-8>
-<title>Try Asciidoc in your browser </title>
-<script src='AsciiDocBox/cm/lib/codemirror.js'></script>
-<script src='AsciiDocBox/cm/mode/asciidoc/asciidoc.js'></script>
-<script src="AsciiDocBox/asciidoctor-all.min.js"></script>
-<script src="react-0.12.1.min.js"></script>
-<script src="JSXTransformer-0.12.1.js"></script>
-<link rel="stylesheet" href="AsciiDocBox/cm/lib/codemirror.css">
-<link rel="stylesheet" href="AsciiDocBox/asciidoc.css">
+<title>Try Asciidoc in your browser</title>
+<script src='/_ide/static/AsciiDocBox/cm/lib/codemirror.js'></script>
+<script src='/_ide/static/AsciiDocBox/cm/mode/asciidoc/asciidoc.js'></script>
+<script src="/_ide/static/AsciiDocBox/asciidoctor-all.min.js"></script>
+<script src="/_ide/static/react-0.12.1.min.js"></script>
+<script src="/_ide/static/JSXTransformer-0.12.1.js"></script>
+<link rel="stylesheet" href="/_ide/static/AsciiDocBox/cm/lib/codemirror.css">
+<link rel="stylesheet" href="/_ide/static/AsciiDocBox/asciidoc.css">
 <style>
   html, .CodeMirror, .CodeMirror-scroll {
     height: 100%;
@@ -137,10 +137,11 @@ function showError(msg) {
   window.error.style.display = 'block';
 }
 
+var opts = Opal.hash2(['safe'], {'safe': 'unsafe'});
 function cmChange(editor) {
   try {
     window.error.style.display = 'none';
-    window.rprod.innerHTML = Opal.Asciidoctor.$render(editor.getValue());
+    window.rprod.innerHTML = Opal.Asciidoctor.$convert(editor.getValue(), opts);
     curfile.set({saved: false});
     curfile.saveAfterDelay();
   } catch(e) {
@@ -212,7 +213,7 @@ var curfile = {
       this.set({saved: true});
       return;
     }
-    jsondo('POST', '/save', {path: curfile.path, data: newdata}, function () {
+    jsondo('POST', '/_ide/save', {path: curfile.path, data: newdata}, function () {
       this.set({saved: true, data: newdata});
     }.bind(this));
   }
@@ -223,7 +224,7 @@ var loadfile = function (e) {
     curfile.save();
   }
   var filepath = e.target.textContent;
-  jsondo('GET', '/file?path=' + encodeURIComponent(filepath), '', function (err, data) {
+  jsondo('GET', '/_ide/file?path=' + encodeURIComponent(filepath), '', function (err, data) {
     editor.setValue(data);
     curfile.set({path: filepath, saved: true, data: data});
   });
@@ -238,7 +239,7 @@ var FileList = React.createClass({
   }
 });
 
-jsondo('GET', '/filelist', '', function (err, data) {
+jsondo('GET', '/_ide/filelist', '', function (err, data) {
   React.render(
     <FileList files={data} />,
     document.getElementById('filelist')

@@ -6,14 +6,14 @@ from bottle import route, request, response, static_file
 
 DIR = os.path.dirname(os.path.abspath(__file__))
 
-@route('/save', method='POST')
+@route('/_ide/save', method='POST')
 def save():
     path = request.json['path']
     data = request.json['data']
     open(path, 'w').write(data.encode('utf-8'))
     return '""'
 
-@route('/filelist', method='GET')
+@route('/_ide/filelist', method='GET')
 def filelist():
     files = []
     for root, dirnames, filenames in os.walk('.'):
@@ -25,7 +25,7 @@ def filelist():
     files = [f[2:] for f in files]
     return json.dumps(files)
 
-@route('/file', method='GET')
+@route('/_ide/file', method='GET')
 def loadfile():
     return json.dumps(
         open(os.path.join('.', request.GET.path)).read().decode('utf-8'),
@@ -35,12 +35,15 @@ def loadfile():
 @route('/')
 def index():
     return static_file('index.html', root=DIR)
-@route('/AsciiDocBox/<path:path>')
+@route('/_ide/static/AsciiDocBox/<path:path>')
 def static_srv(path):
     return static_file(path, root=os.path.join(DIR, 'AsciiDocBox'))
-@route('<path:path>.js')
+@route('/_ide/static/<path:path>.js')
 def static_srv2(path):
     return static_file(path + '.js', root=DIR)
+@route('<path:path>')
+def static_srv3(path):
+    return static_file(path, root='.')
 
 @route('/export/<fname>.doc')
 def export_doc(fname):
