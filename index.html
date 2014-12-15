@@ -129,7 +129,9 @@ function betterTab(cm) {
 }
 var editor = CodeMirror.fromTextArea(document.getElementById("lcode"), {
   mode: 'asciidoc',
-  indentUnit: 2,
+  indentUnit: 4,
+  tabSize: 4,
+  indentWithTabs: true,
   lineWrapping: true,
   electricChars: false,
   extraKeys: { Tab: betterTab }
