@@ -8,7 +8,10 @@ DIR = os.path.dirname(os.path.abspath(__file__))
 
 @route('/save', method='POST')
 def save():
-    return 'true'
+    path = request.json['path']
+    data = request.json['data']
+    open(path, 'w').write(data)
+    return '""'
 
 @route('/filelist', method='GET')
 def filelist():

@@ -141,6 +141,8 @@ function cmChange(editor) {
   try {
     window.error.style.display = 'none';
     window.rprod.innerHTML = Opal.Asciidoctor.$render(editor.getValue());
+    curfile.set({saved: false});
+    curfile.saveAfterDelay();
   } catch(e) {
     showError(e.message);
   }
@@ -160,6 +162,7 @@ editor.setValue('');
 window.editor = editor;
 }());
 </script>
+
 <script type="text/jsx">
 /** @jsx React.DOM */
 'use strict';
@@ -180,12 +183,49 @@ function jsondo(method, url, data, cb) {
 var filePathElt = document.getElementById('filepath');
 var fileSavedElt = document.getElementById('filesaved');
 
+var curfile = {
+  set: function (o) {
+    // data comes first so we can override 'saved'
+    if (o.data != null && o.data != this.data) {
+      this.data = o.data;
+    }
+    if (o.path != null && o.path != this.path) {
+      filePathElt.textContent = this.path = o.path;
+    }
+    if (o.saved != null && o.saved != this.saved) {
+      this.saved = o.saved;
+      fileSavedElt.textContent = o.saved ? 'Saved' : 'Modified';
+    }
+  },
+
+  saveTimeout: null,
+  saveAfterDelay: function () {
+    if (this.saveTimeout !== null) {
+      clearTimeout(this.saveTimeout);
+    }
+    this.saveTimeout = setTimeout(this.save.bind(this), 2000);
+  },
+  save: function () {
+    this.saveTimeout = null;
+    var newdata = editor.getValue();
+    if (this.data === newdata) {
+      this.set({saved: true});
+      return;
+    }
+    jsondo('POST', '/save', {path: curfile.path, data: newdata}, function () {
+      this.set({saved: true, data: newdata});
+    }.bind(this));
+  }
+};
+
 var loadfile = function (e) {
+  if (curfile.path !== undefined) {
+    curfile.save();
+  }
   var filepath = e.target.textContent;
   jsondo('GET', '/file?path=' + encodeURIComponent(filepath), '', function (err, data) {
     editor.setValue(data);
-    filePathElt.textContent = filepath;
-    fileSavedElt.textContent = 'Saved';
+    curfile.set({path: filepath, saved: true, data: data});
   });
 };
 
