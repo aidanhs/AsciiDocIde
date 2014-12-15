@@ -168,7 +168,7 @@ window.editor = editor;
 /** @jsx React.DOM */
 'use strict';
 
-function jsondo(method, url, data, cb) {
+function dojson(method, url, data, cb) {
   var r = new XMLHttpRequest();
   r.open(method, url, true);
   r.setRequestHeader('Content-type', 'application/json');
@@ -213,7 +213,7 @@ var curfile = {
       this.set({saved: true});
       return;
     }
-    jsondo('POST', '/_ide/save', {path: curfile.path, data: newdata}, function () {
+    dojson('POST', '/_ide/save', {path: curfile.path, data: newdata}, function () {
       this.set({saved: true, data: newdata});
     }.bind(this));
   }
@@ -224,7 +224,7 @@ var loadfile = function (e) {
     curfile.save();
   }
   var filepath = e.target.textContent;
-  jsondo('GET', '/_ide/load?path=' + encodeURIComponent(filepath), '', function (err, data) {
+  dojson('GET', '/_ide/load?path=' + encodeURIComponent(filepath), '', function (err, data) {
     editor.setValue(data);
     curfile.set({path: filepath, saved: true, data: data});
   });
@@ -239,7 +239,7 @@ var FileList = React.createClass({
   }
 });
 
-jsondo('GET', '/_ide/filelist', '', function (err, data) {
+dojson('GET', '/_ide/filelist', '', function (err, data) {
   React.render(
     <FileList files={data} />,
     document.getElementById('filelist')
