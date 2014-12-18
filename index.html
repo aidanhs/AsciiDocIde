@@ -218,7 +218,7 @@ var curfile = {
       return;
     }
     dojson('POST', '/_ide/save', {path: curfile.path, data: newdata}, function (err, data) {
-      if (err !== null) { abort(); }
+      if (err) { abort(); }
       this.set({saved: true, data: newdata});
     }.bind(this));
   }
@@ -230,7 +230,7 @@ var loadfile = function (e) {
   }
   var filepath = e.target.textContent;
   dojson('GET', '/_ide/load?path=' + encodeURIComponent(filepath), '', function (err, data) {
-    if (err !== null) { abort(); }
+    if (err) { abort(); }
     editor.setValue(data);
     curfile.set({path: filepath, saved: true, data: data});
   });
