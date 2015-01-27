@@ -244,7 +244,9 @@ var loadfile = function (e) {
 var FileList = React.createClass({
   render: function () {
     var files = this.props.files.map(function (e, i) {
-      return <li key={i}><a onClick={loadfile}>{e}</a></li>;
+      var style = {};
+      if (!/.asciidoc|.ad$/.test(e)) { style.color = 'gray'; }
+      return <li key={i}><a onClick={loadfile} style={style}>{e}</a></li>;
     });
     return <div><ul>{files}</ul></div>;
   }
