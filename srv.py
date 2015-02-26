@@ -30,6 +30,7 @@ def filelist():
             files.append(os.path.join(root, filename))
     assert all([f.startswith('./') for f in files])
     files = [f[2:] for f in files]
+    files.sort()
     return json.dumps(files)
 
 @route('/')
